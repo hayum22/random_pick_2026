@@ -19,72 +19,80 @@
     color-scheme: dark;
   }
   * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
   body {
-    background: radial-gradient(circle at 50% 18%, var(--night) 0%, var(--night-deep) 75%);
+    background: radial-gradient(circle at 30% 45%, var(--night) 0%, var(--night-deep) 70%);
     color: var(--paper);
     font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
     font-weight: 500;
-    display: flex;
-    flex-direction: column;
-    padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: 2.5vh 3vw;
+    gap: 2vh;
   }
-  header {
-    display: flex; justify-content: space-between; align-items: center;
-    gap: 12px; max-width: 1100px; width: 100%; margin: 0 auto;
-  }
-  h1 { font-size: 1.25rem; margin: 0; font-weight: 700; }
-  .count { font-size: 1.1rem; color: var(--mist); }
-  .count strong { color: var(--paper); font-size: 1.4rem; }
+  header { display: flex; justify-content: space-between; align-items: baseline; }
+  h1 { font-size: 4vh; margin: 0; font-weight: 700; }
+  .count { font-size: 3vh; color: var(--mist); }
+  .count strong { color: var(--paper); font-size: 4.5vh; }
 
   main {
-    flex: 1; display: flex; flex-direction: column; align-items: center;
-    justify-content: center; gap: 28px; max-width: 1100px; width: 100%; margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(18vw, 24vw) 1fr;
+    gap: 3vw;
+    min-height: 0;
+  }
+  .left {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3.5vh;
   }
   .stage {
-    position: relative;
-    width: min(78vmin, 640px); aspect-ratio: 1;
+    width: min(62vh, 46vw); aspect-ratio: 1;
     border-radius: 50%;
     background: radial-gradient(circle at 38% 34%, var(--moon-soft) 0%, var(--moon) 55%, #E9B634 100%);
     display: grid; place-items: center;
-    box-shadow: 0 0 80px rgba(255, 212, 92, .35);
+    box-shadow: 0 0 10vh rgba(255, 212, 92, .35);
   }
   .number {
     font-family: "Dela Gothic One", "Zen Maru Gothic", sans-serif;
-    font-size: clamp(5rem, 26vmin, 15rem);
+    font-size: min(26vh, 19vw);
     line-height: 1; color: var(--night-deep);
     font-variant-numeric: tabular-nums;
   }
-  .number.idle { font-size: clamp(2rem, 8vmin, 4.5rem); }
+  .number.idle { font-size: min(8vh, 6vw); }
   .stage.rolling .number { opacity: .55; }
   .stage.hit { animation: pop .45s ease-out; }
   @keyframes pop { 0% { transform: scale(.92); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }
 
   .draw {
-    font: inherit; font-weight: 700; font-size: 1.6rem;
-    padding: 18px 64px; border-radius: 999px; border: 3px solid var(--moon);
+    font: inherit; font-weight: 700; font-size: 4vh;
+    padding: 1.8vh 7vh; border-radius: 999px; border: 3px solid var(--moon);
     background: var(--moon); color: var(--night-deep); cursor: pointer;
   }
   .draw:hover { background: var(--moon-soft); }
   .draw:disabled { background: transparent; color: var(--mist); border-color: var(--line); cursor: not-allowed; }
-  .hint { color: var(--mist); font-size: .95rem; margin-top: -16px; }
 
-  section.history { width: 100%; }
-  .history h2 { font-size: 1rem; color: var(--mist); margin: 0 0 10px; font-weight: 500; }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
-  .chips li {
-    min-width: 3.6em; padding: 6px 10px; text-align: center; border-radius: 10px;
-    border: 2px solid var(--line); font-size: 1.15rem; font-variant-numeric: tabular-nums;
+  section.history {
+    display: flex; flex-direction: column; min-height: 0;
+    border-right: 2px solid var(--line); padding-right: 2vw;
   }
-  .chips li:first-child { border-color: var(--moon); color: var(--moon); font-weight: 700; }
-  .empty { color: var(--mist); }
+  .history h2 { font-size: 2.6vh; color: var(--mist); margin: 0 0 1.5vh; font-weight: 500; }
+  .table-wrap { overflow-y: auto; min-height: 0; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  thead th {
+    position: sticky; top: 0; background: var(--night-deep);
+    font-size: 2.2vh; font-weight: 500; color: var(--mist);
+    padding: .8vh 1vh; border-bottom: 2px solid var(--line);
+  }
+  tbody td { padding: .7vh 1vh; border-bottom: 1px solid var(--line); text-align: center; }
+  td.order { font-size: 2.4vh; color: var(--mist); }
+  td.num { font-size: 3.6vh; font-weight: 700; }
+  tbody tr:first-child td.num { color: var(--moon); }
+  tbody tr:first-child { background: rgba(255, 212, 92, .1); }
+  td.empty { color: var(--mist); font-size: 2.4vh; padding: 2vh 0; }
 
-  footer {
-    display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end;
-    max-width: 1100px; width: 100%; margin: 20px auto 0;
-  }
+  footer { display: flex; flex-wrap: wrap; gap: 1vw; justify-content: flex-end; align-items: center; }
+  .hint { color: var(--mist); font-size: 2vh; margin: 0 auto 0 0; }
   .sub {
-    font: inherit; font-size: .95rem; padding: 8px 16px; border-radius: 8px;
+    font: inherit; font-size: 2vh; padding: .8vh 1.6vh; border-radius: 8px;
     background: transparent; color: var(--paper); border: 2px solid var(--line); cursor: pointer;
   }
   .sub:hover { border-color: var(--mist); }
@@ -93,6 +101,17 @@
   button:focus-visible { outline: 4px solid var(--paper); outline-offset: 4px; }
 
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* 縦長の画面（スマホ等）では縦並びに */
+  @media (max-aspect-ratio: 1/1) {
+    html, body { overflow: auto; height: auto; }
+    body { min-height: 100%; }
+    main { grid-template-columns: 1fr; }
+    .stage { width: min(80vw, 60vh); }
+    .number { font-size: 24vw; }
+    section.history { border-right: none; padding-right: 0; order: 2; }
+    .table-wrap { max-height: 50vh; }
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .stage.hit { animation: none; }
@@ -106,20 +125,27 @@
 </header>
 
 <main>
-  <div class="stage" id="stage">
-    <div class="number idle" id="number" aria-hidden="true">スタート</div>
-  </div>
-  <button class="draw" id="drawBtn">抽選する</button>
-  <p class="hint">スペースキーかEnterキーでも引けます</p>
-  <p class="sr-only" id="announce" aria-live="assertive"></p>
-
   <section class="history" aria-labelledby="histTitle">
-    <h2 id="histTitle">これまでに出た番号（新しい順）</h2>
-    <ul class="chips" id="chips"></ul>
+    <h2 id="histTitle">これまでに出た番号</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">回</th><th scope="col">番号</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
   </section>
+
+  <div class="left">
+    <div class="stage" id="stage">
+      <div class="number idle" id="number" aria-hidden="true">スタート</div>
+    </div>
+    <button class="draw" id="drawBtn">抽選する</button>
+  </div>
+  <p class="sr-only" id="announce" aria-live="assertive"></p>
 </main>
 
 <footer>
+  <p class="hint">スペースキーかEnterキーでも引けます</p>
   <button class="sub" id="animBtn" aria-pressed="true">演出あり</button>
   <button class="sub" id="fsBtn">全画面</button>
   <button class="sub" id="undoBtn">最後の1件を取り消す</button>
@@ -130,7 +156,7 @@
   // ===== 設定 =====
   const MIN = 1;
   const MAX = 410;
-  const ROLL_MS = 1600; // 演出の長さ（ミリ秒）
+  const ROLL_MS = 2600; // 演出の長さ（ミリ秒）
   // ================
 
   const STORE_KEY = `lottery-${MIN}-${MAX}`;
@@ -174,19 +200,16 @@
   function render() {
     $("total").textContent = total;
     $("remain").textContent = total - drawn.length;
-    const chips = $("chips");
-    chips.innerHTML = "";
+    const rows = $("rows");
+    rows.innerHTML = "";
     if (drawn.length === 0) {
-      const li = document.createElement("li");
-      li.className = "empty"; li.style.border = "none";
-      li.textContent = "まだありません";
-      chips.appendChild(li);
+      rows.innerHTML = '<tr><td class="empty" colspan="2">まだありません</td></tr>';
     } else {
-      [...drawn].reverse().forEach(n => {
-        const li = document.createElement("li");
-        li.textContent = n;
-        chips.appendChild(li);
-      });
+      for (let i = drawn.length - 1; i >= 0; i--) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td class="order">${i + 1}</td><td class="num">${drawn[i]}</td>`;
+        rows.appendChild(tr);
+      }
     }
     const done = drawn.length >= total;
     drawBtn.disabled = done || rolling;
