@@ -85,8 +85,8 @@
   tbody td { padding: .7vh 1vh; border-bottom: 1px solid var(--line); text-align: center; }
   td.order { font-size: 2.4vh; color: var(--mist); }
   td.num { font-size: 3.6vh; font-weight: 700; }
-  tbody tr:first-child td.num { color: var(--moon); }
-  tbody tr:first-child { background: rgba(255, 212, 92, .1); }
+  tbody tr.latest td.num { color: var(--moon); }
+  tbody tr.latest { background: rgba(255, 212, 92, .1); }
   td.empty { color: var(--mist); font-size: 2.4vh; padding: 2vh 0; }
 
   footer { display: flex; flex-wrap: wrap; gap: 1vw; justify-content: flex-end; align-items: center; }
@@ -205,11 +205,14 @@
     if (drawn.length === 0) {
       rows.innerHTML = '<tr><td class="empty" colspan="2">まだありません</td></tr>';
     } else {
-      for (let i = drawn.length - 1; i >= 0; i--) {
+      for (let i = 0; i < drawn.length; i++) {
         const tr = document.createElement("tr");
+        if (i === drawn.length - 1) tr.className = "latest";
         tr.innerHTML = `<td class="order">${i + 1}</td><td class="num">${drawn[i]}</td>`;
         rows.appendChild(tr);
       }
+      const wrap = rows.closest(".table-wrap");
+      wrap.scrollTop = wrap.scrollHeight; // 最新の行が見えるように
     }
     const done = drawn.length >= total;
     drawBtn.disabled = done || rolling;
