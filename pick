@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>抽選会</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #1E2A52;
+    --night-deep: #141C3A;
+    --moon: #FFD45C;
+    --moon-soft: #FFE9A8;
+    --paper: #FFFFFF;
+    --mist: #AEB8D6;
+    --line: #3A4A7E;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: radial-gradient(circle at 50% 18%, var(--night) 0%, var(--night-deep) 75%);
+    color: var(--paper);
+    font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+    font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  }
+  header {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 12px; max-width: 1100px; width: 100%; margin: 0 auto;
+  }
+  h1 { font-size: 1.25rem; margin: 0; font-weight: 700; }
+  .count { font-size: 1.1rem; color: var(--mist); }
+  .count strong { color: var(--paper); font-size: 1.4rem; }
+
+  main {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 28px; max-width: 1100px; width: 100%; margin: 0 auto;
+  }
+  .stage {
+    position: relative;
+    width: min(78vmin, 640px); aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 34%, var(--moon-soft) 0%, var(--moon) 55%, #E9B634 100%);
+    display: grid; place-items: center;
+    box-shadow: 0 0 80px rgba(255, 212, 92, .35);
+  }
+  .number {
+    font-family: "Dela Gothic One", "Zen Maru Gothic", sans-serif;
+    font-size: clamp(5rem, 26vmin, 15rem);
+    line-height: 1; color: var(--night-deep);
+    font-variant-numeric: tabular-nums;
+  }
+  .number.idle { font-size: clamp(2rem, 8vmin, 4.5rem); }
+  .stage.rolling .number { opacity: .55; }
+  .stage.hit { animation: pop .45s ease-out; }
+  @keyframes pop { 0% { transform: scale(.92); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }
+
+  .draw {
+    font: inherit; font-weight: 700; font-size: 1.6rem;
+    padding: 18px 64px; border-radius: 999px; border: 3px solid var(--moon);
+    background: var(--moon); color: var(--night-deep); cursor: pointer;
+  }
+  .draw:hover { background: var(--moon-soft); }
+  .draw:disabled { background: transparent; color: var(--mist); border-color: var(--line); cursor: not-allowed; }
+  .hint { color: var(--mist); font-size: .95rem; margin-top: -16px; }
+
+  section.history { width: 100%; }
+  .history h2 { font-size: 1rem; color: var(--mist); margin: 0 0 10px; font-weight: 500; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+  .chips li {
+    min-width: 3.6em; padding: 6px 10px; text-align: center; border-radius: 10px;
+    border: 2px solid var(--line); font-size: 1.15rem; font-variant-numeric: tabular-nums;
+  }
+  .chips li:first-child { border-color: var(--moon); color: var(--moon); font-weight: 700; }
+  .empty { color: var(--mist); }
+
+  footer {
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end;
+    max-width: 1100px; width: 100%; margin: 20px auto 0;
+  }
+  .sub {
+    font: inherit; font-size: .95rem; padding: 8px 16px; border-radius: 8px;
+    background: transparent; color: var(--paper); border: 2px solid var(--line); cursor: pointer;
+  }
+  .sub:hover { border-color: var(--mist); }
+  .sub[aria-pressed="true"] { border-color: var(--moon); color: var(--moon); }
+  .sub.danger:hover { border-color: #FF8A8A; color: #FF8A8A; }
+  button:focus-visible { outline: 4px solid var(--paper); outline-offset: 4px; }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stage.hit { animation: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>抽選会</h1>
+  <div class="count">残り <strong id="remain">410</strong> / <span id="total">410</span></div>
+</header>
+
+<main>
+  <div class="stage" id="stage">
+    <div class="number idle" id="number" aria-hidden="true">スタート</div>
+  </div>
+  <button class="draw" id="drawBtn">抽選する</button>
+  <p class="hint">スペースキーかEnterキーでも引けます</p>
+  <p class="sr-only" id="announce" aria-live="assertive"></p>
+
+  <section class="history" aria-labelledby="histTitle">
+    <h2 id="histTitle">これまでに出た番号（新しい順）</h2>
+    <ul class="chips" id="chips"></ul>
+  </section>
+</main>
+
+<footer>
+  <button class="sub" id="animBtn" aria-pressed="true">演出あり</button>
+  <button class="sub" id="fsBtn">全画面</button>
+  <button class="sub" id="undoBtn">最後の1件を取り消す</button>
+  <button class="sub danger" id="resetBtn">最初からやり直す</button>
+</footer>
+
+<script>
+  // ===== 設定 =====
+  const MIN = 1;
+  const MAX = 410;
+  const ROLL_MS = 1600; // 演出の長さ（ミリ秒）
+  // ================
+
+  const STORE_KEY = `lottery-${MIN}-${MAX}`;
+  const total = MAX - MIN + 1;
+  let drawn = [];
+  let rolling = false;
+  let animate = true;
+
+  const $ = id => document.getElementById(id);
+  const numEl = $("number"), stage = $("stage"), drawBtn = $("drawBtn");
+
+  // 偏りのない乱数（crypto + 棄却サンプリング）
+  function randInt(n) {
+    const limit = Math.floor(0x100000000 / n) * n;
+    const buf = new Uint32Array(1);
+    do { crypto.getRandomValues(buf); } while (buf[0] >= limit);
+    return buf[0] % n;
+  }
+
+  function remaining() {
+    const used = new Set(drawn);
+    const pool = [];
+    for (let i = MIN; i <= MAX; i++) if (!used.has(i)) pool.push(i);
+    return pool;
+  }
+
+  function save() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify({ drawn, animate })); } catch (e) {}
+  }
+  function load() {
+    try {
+      const d = JSON.parse(localStorage.getItem(STORE_KEY));
+      if (d && Array.isArray(d.drawn)) {
+        drawn = d.drawn.filter(n => Number.isInteger(n) && n >= MIN && n <= MAX);
+        drawn = [...new Set(drawn)];
+      }
+      if (d && typeof d.animate === "boolean") animate = d.animate;
+    } catch (e) {}
+  }
+
+  function render() {
+    $("total").textContent = total;
+    $("remain").textContent = total - drawn.length;
+    const chips = $("chips");
+    chips.innerHTML = "";
+    if (drawn.length === 0) {
+      const li = document.createElement("li");
+      li.className = "empty"; li.style.border = "none";
+      li.textContent = "まだありません";
+      chips.appendChild(li);
+    } else {
+      [...drawn].reverse().forEach(n => {
+        const li = document.createElement("li");
+        li.textContent = n;
+        chips.appendChild(li);
+      });
+    }
+    const done = drawn.length >= total;
+    drawBtn.disabled = done || rolling;
+    drawBtn.textContent = done ? "すべて出ました" : "抽選する";
+    $("undoBtn").disabled = drawn.length === 0 || rolling;
+    $("animBtn").setAttribute("aria-pressed", animate);
+    $("animBtn").textContent = animate ? "演出あり" : "演出なし";
+  }
+
+  function showNumber(n, idle = false) {
+    numEl.textContent = n;
+    numEl.classList.toggle("idle", idle);
+  }
+
+  function finish(result) {
+    drawn.push(result);
+    save();
+    rolling = false;
+    stage.classList.remove("rolling");
+    showNumber(result);
+    stage.classList.remove("hit"); void stage.offsetWidth; stage.classList.add("hit");
+    $("announce").textContent = `${result}番`;
+    render();
+  }
+
+  function draw() {
+    if (rolling) return;
+    const pool = remaining();
+    if (pool.length === 0) return;
+    const result = pool[randInt(pool.length)];
+    $("announce").textContent = "";
+
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!animate || reduce || pool.length === 1) { finish(result); return; }
+
+    rolling = true;
+    stage.classList.add("rolling");
+    render();
+    const start = performance.now();
+    let delay = 40;
+    (function tick() {
+      const t = performance.now() - start;
+      if (t >= ROLL_MS) { finish(result); return; }
+      showNumber(pool[randInt(pool.length)]);
+      delay = 40 + (t / ROLL_MS) ** 2 * 220; // だんだん遅く
+      setTimeout(tick, delay);
+    })();
+  }
+
+  drawBtn.addEventListener("click", draw);
+  document.addEventListener("keydown", e => {
+    if (e.target.tagName === "BUTTON" && e.target !== drawBtn) return;
+    if (e.code === "Space" || e.key === "Enter") { e.preventDefault(); draw(); }
+  });
+
+  $("undoBtn").addEventListener("click", () => {
+    if (!drawn.length || rolling) return;
+    const last = drawn[drawn.length - 1];
+    if (!confirm(`最後に出た「${last}」を取り消して、もう一度引ける状態に戻しますか？`)) return;
+    drawn.pop(); save();
+    drawn.length ? showNumber(drawn[drawn.length - 1]) : showNumber("スタート", true);
+    $("announce").textContent = `${last}を取り消しました`;
+    render();
+  });
+
+  $("resetBtn").addEventListener("click", () => {
+    if (rolling) return;
+    if (!confirm("これまでの結果をすべて消して、最初からやり直しますか？")) return;
+    drawn = []; save();
+    showNumber("スタート", true);
+    $("announce").textContent = "リセットしました";
+    render();
+  });
+
+  $("animBtn").addEventListener("click", () => { animate = !animate; save(); render(); });
+
+  $("fsBtn").addEventListener("click", () => {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  });
+
+  load();
+  if (drawn.length) showNumber(drawn[drawn.length - 1]);
+  render();
+</script>
+</body>
+</html>
